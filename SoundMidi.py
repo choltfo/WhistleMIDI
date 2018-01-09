@@ -16,19 +16,33 @@ for a in midiout.get_ports():
 
 midiout.open_port(1)
 
+
+#exit()
+
 def freqToNote(f):
     # 440 -> 69
     # 880 -> 81
     #1760 -> 93
-    return round(69+math.log(f/440,2)*12)
+    return math.floor(69+math.log(f/440,2)*12)
 
-def noteOn(n):
+def playNoteOn(n):
     note_on = [0x90, n, 112] # channel 1, middle C, velocity 112
     midiout.send_message(note_on)
     
-def noteOff(n):
+def playNoteOff(n):
     note_off = [0x80, n, 0]
     midiout.send_message(note_off)
+    
+def noteOn(n):
+    playNoteOn(n)
+    #playNoteOn(n+4)
+    #playNoteOn(n+7)
+
+def noteOff(n):
+    playNoteOff(n)
+    #playNoteOff(n+4)
+    #playNoteOff(n+7)
+    
 
     
 midiout.send_message([0b11000000, 81])
@@ -36,7 +50,7 @@ midiout.send_message([0b11000000, 81])
 np.set_printoptions(suppress=True) # don't use scientific notation
 
 CHUNK = 4096 # number of data points to read at a time
-RATE = 44100 # time resolution of the recording device (Hz)
+RATE = 48000 # time resolution of the recording device (Hz)
 
 p=pyaudio.PyAudio() # start the PyAudio class
 stream=p.open(format=pyaudio.paInt16,channels=1,rate=RATE,input=True,
@@ -62,7 +76,7 @@ for i in range(10000): #to it a few times just to see
     avab = np.mean(aData)
     #print(avab)
     
-    if (avab > 400) :
+    if (avab > 600) :
         if (note != lastNote) :
             if (lastNote != 0) :
                 noteOff(lastNote)
@@ -87,6 +101,7 @@ stream.stop_stream()
 stream.close()
 p.terminate()
 del midiout
+
 
 
 
