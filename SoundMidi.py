@@ -4,7 +4,7 @@ import time
 
 import pyaudio
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 import math
 
@@ -16,6 +16,9 @@ for a in midiout.get_ports():
 
 midiout.open_port(1)
 
+scale = [0, 2, 4, 5, 7, 9, 11, 12]
+
+base = 72 % 12
 
 #exit()
 
@@ -23,7 +26,21 @@ def freqToNote(f):
     # 440 -> 69
     # 880 -> 81
     #1760 -> 93
-    return math.floor(69+math.log(f/440,2)*12)
+    probablyNote = (69 + math.log(f/440,2)*12) - base
+    
+    if probablyNote < 0:
+        return 0
+    
+    octave = probablyNote // 12
+    
+    oct_note = probablyNote % 12
+    
+    scale_val = min(scale, key=lambda x: abs(x - oct_note))
+    
+    print(probablyNote + base, octave, oct_note, scale_val)
+    
+    return int((octave * 12) + base + scale_val)
+    
 
 def playNoteOn(n):
     note_on = [0x90, n, 112] # channel 1, middle C, velocity 112
@@ -35,15 +52,14 @@ def playNoteOff(n):
     
 def noteOn(n):
     playNoteOn(n)
-    #playNoteOn(n+4)
     #playNoteOn(n+7)
+    #playNoteOn(n+12)
 
 def noteOff(n):
     playNoteOff(n)
-    #playNoteOff(n+4)
     #playNoteOff(n+7)
+    #playNoteOff(n+12)
     
-
     
 midiout.send_message([0b11000000, 81])
 
@@ -76,7 +92,7 @@ for i in range(10000): #to it a few times just to see
     avab = np.mean(aData)
     #print(avab)
     
-    if (avab > 600) :
+    if (avab > 500) :
         if (note != lastNote) :
             if (lastNote != 0) :
                 noteOff(lastNote)
@@ -86,7 +102,7 @@ for i in range(10000): #to it a few times just to see
         if (lastNote != 0) :
             noteOff(lastNote)
         lastNote = 0
-    print (note)
+    #print (note)
     
     
 
